@@ -1,0 +1,31 @@
+Parameters:
+  SecurityGroupId:
+    Type: String
+    Description: ID of the security group to apply the egress rule
+
+  IpProtocol:
+    Type: String
+    Description: IP protocol (tcp, udp, icmp, icmpv6)
+    Default: tcp
+
+  FromPort:
+    Type: Integer
+    Description: If the protocol is TCP or UDP, this is the start of the port range.
+
+  ToPort:
+    Type: Integer
+    Description: If the protocol is TCP or UDP, this is the end of the port range
+
+  CidrIp:
+    Type: String
+    Description: Allowed IP address range (in CIDR format)
+
+Resources:
+  SgEgress:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId: !Ref SecurityGroupId
+      IpProtocol: !Ref IpProtocol
+      FromPort: !Ref FromPort
+      ToPort: !Ref ToPort
+      CidrIp: !Ref CidrIp

@@ -1,0 +1,27 @@
+Parameters:
+  NameEip:
+    Type: String
+    Description: Name of the elastic IP
+
+  Domain:
+    Type: String
+    Description: If you define an Elastic IP address and associate it with a VPC that is defined in the same template.
+    Default: vpc
+
+Resources:
+  EIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: !Ref Domain
+      Tags:
+      - Key: Name
+        Value: !Ref NameEip
+
+Outputs:
+  Id:
+    Description: The id of the Elastic Ip
+    Value: !Ref EIP
+
+  AllocationId:
+    Description: The ID that AWS assigns to represent the allocation of the address for use with Amazon VPC.
+    Value: !GetAtt EIP.AllocationId

@@ -1,0 +1,27 @@
+Parameters:
+  NameNatGateway:
+    Type: String
+    Description: Name of the NAT gateway
+
+  AllocationId:
+    Type: String
+    Description: The allocation ID of the Elastic IP address for the NAT gateway
+
+  SubnetId:
+    Type: String
+    Description: The ID of the public subnet where the NAT gateway should be created
+
+Resources:
+  NatGateway:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !Ref AllocationId
+      SubnetId: !Ref SubnetId
+      Tags:
+      - Key: Name
+        Value: !Ref NameNatGateway
+
+Outputs:
+  Id:
+    Description: Id of the Nat Gateway 
+    Value: !Ref NatGateway

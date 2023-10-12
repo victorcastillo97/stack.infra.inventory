@@ -1,0 +1,27 @@
+Description: Template for create a VPC
+
+Parameters:
+  VpcName:
+    Type: String
+    Description: Name of the VPC
+
+  VpcCidrBlock:
+    Type: String
+    Description: Block CIDR of the VPC
+    Default: 10.0.0.0/16
+
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCidrBlock
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: !Ref VpcName
+
+Outputs:
+  Id:
+    Description: ID of the VPC
+    Value: !Ref VPC

@@ -1,0 +1,203 @@
+Parameters:
+  StackFilesPath:
+    Type: String
+    Description: Path of the stacks template files
+
+  ProjectName:
+    Type: String
+    Description: Name of the VPC
+
+  VpcCidrBlock:
+    Type: String
+    Description: Block CIDR of the VPC
+    Default: 10.192.0.0/16
+
+  PublicSubnet1CIDR:
+    Description: Please enter the IP range (CIDR notation) for the public subnet in the first Availability Zone
+    Type: String
+    Default: 10.192.10.0/24
+
+  PublicSubnet2CIDR:
+    Description: Please enter the IP range (CIDR notation) for the public subnet in the second Availability Zone
+    Type: String
+    Default: 10.192.11.0/24
+
+  PrivateSubnet1CIDR:
+    Description: Please enter the IP range (CIDR notation) for the private subnet in the first Availability Zone
+    Type: String
+    Default: 10.192.20.0/24
+
+  PrivateSubnet2CIDR:
+    Description: Please enter the IP range (CIDR notation) for the private subnet in the second Availability Zone
+    Type: String
+    Default: 10.192.21.0/24
+
+Resources:
+  VPC:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${StackFilesPath}/network/vpc.yml"
+      Parameters:
+        VpcName: !Sub "${ProjectName}-vpc"
+        VpcCidrBlock: !Ref VpcCidrBlock
+
+  InternetGateway:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+      TemplateURL: !Sub "${StackFilesPath}/network/internet_gateway.yml"
+      Parameters:
+        IgwName: !Sub "${ProjectName}-igw"
+        VPCId: !GetAtt VPC.Outputs.Id
+  
+  SubnetPublic1:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+      TemplateURL: !Sub "${StackFilesPath}/network/subnet.yml"
+      Parameters:
+        SubnetName: !Sub "${ProjectName}-subnet-public-1"
+        VpcId: !GetAtt VPC.Outputs.Id
+        CidrBlock: !Ref PublicSubnet1CIDR
+        AvailabilityZone: !Select [ 0, !GetAZs '' ]
+        MapPublicIpOnLaunch: true
+
+  SubnetPublic2:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+      TemplateURL: !Sub "${StackFilesPath}/network/subnet.yml"
+      Parameters:
+        SubnetName: !Sub "${ProjectName}-subnet-public-2"
+        VpcId: !GetAtt VPC.Outputs.Id
+        CidrBlock: !Ref PublicSubnet2CIDR
+        AvailabilityZone: !Select [ 1, !GetAZs '' ]
+        MapPublicIpOnLaunch: true
+
+  PublicRouteTable:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${StackFilesPath}/network/route_table.yml"
+      Parameters:
+        RtName: !Sub "${ProjectName}-routetable-public"
+        VpcId: !GetAtt VPC.Outputs.Id
+
+  PublicSubnet1RouteTableAssociation:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${StackFilesPath}/network/subnet_route_table_association.yml"
+      Parameters:
+        RouteTableId: !GetAtt PublicRouteTable.Outputs.Id
+        SubnetId: !GetAtt SubnetPublic1.Outputs.Id
+
+  PublicSubnet2RouteTableAssociation:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${StackFilesPath}/network/subnet_route_table_association.yml"
+      Parameters:
+        RouteTableId: !GetAtt PublicRouteTable.Outputs.Id
+        SubnetId: !GetAtt SubnetPublic2.Outputs.Id
+
+  PublicRouteIgw:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: InternetGateway
+    Properties:
+      TemplateURL: !Sub "${StackFilesPath}/network/route.yml"
+      Parameters:
+        RouteTableId: !GetAtt PublicRouteTable.Outputs.Id
+        DestinationCidrBlock: 0.0.0.0/0
+        InternetGatewayId: !GetAtt InternetGateway.Outputs.Id
+
+
+  SubnetPrivate1:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+      TemplateURL: !Sub "${StackFilesPath}/network/subnet.yml"
+      Parameters:
+        SubnetName: !Sub "${ProjectName}-subnet-private-1"
+        VpcId: !GetAtt VPC.Outputs.Id
+        CidrBlock: !Ref PrivateSubnet1CIDR
+        AvailabilityZone: !Select [ 0, !GetAZs '' ]
+
+  SubnetPrivate2:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+      TemplateURL: !Sub "${StackFilesPath}/network/subnet.yml"
+      Parameters:
+        SubnetName: !Sub "${ProjectName}-subnet-private-2"
+        VpcId: !GetAtt VPC.Outputs.Id
+        CidrBlock: !Ref PrivateSubnet2CIDR
+        AvailabilityZone: !Select [ 1, !GetAZs '' ]
+
+  PrivateRouteTable1:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${StackFilesPath}/network/route_table.yml"
+      Parameters:
+        RtName: !Sub "${ProjectName}-routetable-private-1"
+        VpcId: !GetAtt VPC.Outputs.Id
+
+  PrivateRouteTable2:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${StackFilesPath}/network/route_table.yml"
+      Parameters:
+        RtName: !Sub "${ProjectName}-routetable-private-2"
+        VpcId: !GetAtt VPC.Outputs.Id
+
+  PrivateSubnet1RouteTableAssociation:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${StackFilesPath}/network/subnet_route_table_association.yml"
+      Parameters:
+        RouteTableId: !GetAtt PrivateRouteTable1.Outputs.Id
+        SubnetId: !GetAtt SubnetPrivate1.Outputs.Id
+
+  PrivateSubnet2RouteTableAssociation:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${StackFilesPath}/network/subnet_route_table_association.yml"
+      Parameters:
+        RouteTableId: !GetAtt PrivateRouteTable2.Outputs.Id
+        SubnetId: !GetAtt SubnetPrivate2.Outputs.Id
+
+  ElasticIp1:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${StackFilesPath}/network/elastic_ip.yml"
+      Parameters:
+        NameEip: !Sub "${ProjectName}-eip"
+
+  NatGateway:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: InternetGateway
+    Properties:
+      TemplateURL: !Sub "${StackFilesPath}/network/nat_gateway.yml"
+      Parameters:
+        AllocationId: !GetAtt ElasticIp1.Outputs.AllocationId
+        SubnetId: !GetAtt SubnetPublic1.Outputs.Id
+        NameNatGateway: !Sub "${ProjectName}-nat-gateway"
+
+  PrivateRouteNatGtw1:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: NatGateway
+    Properties:
+      TemplateURL: !Sub "${StackFilesPath}/network/route.yml"
+      Parameters:
+        RouteTableId: !GetAtt PrivateRouteTable1.Outputs.Id
+        DestinationCidrBlock: 0.0.0.0/0
+        NatGatewayId: !GetAtt NatGateway.Outputs.Id
+  
+  PrivateRouteNatGtw2:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: NatGateway
+    Properties:
+      TemplateURL: !Sub "${StackFilesPath}/network/route.yml"
+      Parameters:
+        RouteTableId: !GetAtt PrivateRouteTable2.Outputs.Id
+        DestinationCidrBlock: 0.0.0.0/0
+        NatGatewayId: !GetAtt NatGateway.Outputs.Id
+
+

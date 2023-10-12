@@ -1,0 +1,32 @@
+Parameters:
+  SecurityGroupId:
+    Type: String
+    Description: ID of the security group to apply the ingress rule
+
+  IpProtocol:
+    Type: String
+    Description: IP protocol (tcp, udp, icmp, icmpv6)
+    Default: tcp
+
+  FromPort:
+    Type: Integer
+    Description: The start of port range for the TCP and UDP protocols, or an ICMP/ICMPv6 type number
+
+  ToPort:
+    Type: Integer
+    Description: The end of port range for the TCP and UDP protocols, or an ICMP/ICMPv6 code.
+
+  CidrIp:
+    Type: String
+    Description: Allowed IP address range (in CIDR format)
+
+Resources:
+  DemoSgIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref SecurityGroupId
+      IpProtocol: !Ref IpProtocol
+      FromPort: !Ref FromPort
+      ToPort: !Ref ToPort
+      CidrIp: !Ref CidrIp
+      

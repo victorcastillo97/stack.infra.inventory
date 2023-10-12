@@ -1,0 +1,38 @@
+Parameters:
+  SubnetName:
+    Type: String
+    Description: Name of the subnet
+
+  VpcId:
+    Type: String
+    Description: Id of the vpc
+    Default: 10.0.0.0/16
+
+  CidrBlock:
+    Type: String
+    Description: Block CIDR of the Subnet
+  
+  AvailabilityZone:
+    Type: String
+    Description: The Availability Zone of the subnet.
+  
+  MapPublicIpOnLaunch:
+    Type: String
+    Description: Indicates whether instances launched in this subnet receive a public IPv4 address.
+    Default: false
+
+Resources:
+  Subnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VpcId
+      CidrBlock: !Ref CidrBlock
+      AvailabilityZone: !Ref AvailabilityZone
+      Tags:
+        - Key: Name
+          Value: !Ref SubnetName
+
+Outputs:
+  Id:
+    Description: ID of the subnet
+    Value: !Ref Subnet

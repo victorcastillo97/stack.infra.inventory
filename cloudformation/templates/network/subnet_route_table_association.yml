@@ -1,0 +1,15 @@
+Parameters:
+  SubnetId:
+    Type: String
+    Description: The ID of the subnet to associate with the route table
+
+  RouteTableId:
+    Type: String
+    Description: The ID of the route table to associate with the subnet
+
+Resources:
+  SubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref SubnetId
+      RouteTableId: !Ref RouteTableId

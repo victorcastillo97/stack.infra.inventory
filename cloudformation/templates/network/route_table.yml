@@ -1,0 +1,22 @@
+Parameters:
+  RtName:
+    Type: String
+    Description: Name of the Route table
+
+  VpcId:
+    Type: String
+    Description: ID of the VPC
+
+Resources:
+  RouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VpcId
+      Tags:
+      - Key: Name
+        Value: !Ref RtName
+
+Outputs:
+  Id:
+    Description: Id of the route table
+    Value: !Ref RouteTable

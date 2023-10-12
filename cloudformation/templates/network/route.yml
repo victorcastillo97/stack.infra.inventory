@@ -1,0 +1,32 @@
+Parameters:
+  RouteTableId:
+    Type: String
+    Description: The ID of the public route table to associate the route with
+
+  DestinationCidrBlock:
+    Type: String
+    Description: The destination IPv4 CIDR block for the route
+    Default: 0.0.0.0/0
+
+  InternetGatewayId:
+    Type: String
+    Description: The ID of the Internet Gateway to use as the target for the route
+    Default: ""
+    
+  NatGatewayId:
+    Type: String
+    Description: (IPv4 traffic only) The ID of a NAT gateway.
+    Default: ""
+
+Conditions:
+  UseInternetGateway: !Not [!Equals ["", !Ref InternetGatewayId]]
+  UseNatGateway: !Not [!Equals ["", !Ref NatGatewayId]]
+
+Resources:
+  Route:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref RouteTableId
+      DestinationCidrBlock: !Ref DestinationCidrBlock
+      GatewayId: !If [UseInternetGateway, !Ref InternetGatewayId, !Ref AWS::NoValue]
+      NatGatewayId: !If [UseNatGateway, !Ref NatGatewayId, !Ref AWS::NoValue]

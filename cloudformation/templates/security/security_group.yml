@@ -1,0 +1,27 @@
+Parameters:
+  VpcId:
+    Description: The ID of the VPC for the security group.
+    Type: String
+
+  SgName:
+    Description: The name of the security group.
+    Type: String
+    Default: ""
+
+  SgDescription:
+    Description: Description for the security group
+    Type: String
+    Default: ""
+
+Resources:
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Ref SgName
+      GroupDescription: !Ref SgDescription
+      VpcId: !Ref VpcId
+
+Outputs:
+  Id:
+    Description: Id of the security group 
+    Value: !Ref SecurityGroup

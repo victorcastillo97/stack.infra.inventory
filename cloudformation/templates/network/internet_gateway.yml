@@ -1,0 +1,27 @@
+Parameters:
+  IgwName:
+    Type: String
+    Description: Name of the Internet Gateway
+
+  VPCId:
+    Type: String
+    Description: ID of the VPC
+
+Resources:
+  InternetGateway:
+      Type: AWS::EC2::InternetGateway
+      Properties:
+        Tags:
+        - Key: Name
+          Value: !Ref IgwName
+
+  InternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref VPCId
+
+Outputs:
+  Id:
+    Description: ID of the Internet Gateway
+    Value: !Ref InternetGateway
