@@ -19,7 +19,7 @@ STACK_DIR_LOCAL			= ./cloudformation/templates
 stacks.migrate:
 	@ aws s3 cp ${STACK_DIR_LOCAL} s3://${BUCKET_INFRA_STACK_PATH} --recursive 
 
-create:
+create.network:
 	@ aws cloudformation create-stack --stack-name vpc-create \
 	--template-body file://./cloudformation/stacks/network/vpc.yml \
 	--parameters \
@@ -29,22 +29,20 @@ create:
 	@ aws cloudformation wait stack-create-complete  \
 	--stack-name vpc-create
 
-delete:
+delete.network:
 	@ aws cloudformation delete-stack --stack-name vpc-create
 	@ aws cloudformation wait stack-delete-complete --stack-name vpc-create
 
-create.rest:
-	@ aws cloudformation create-stack --stack-name vpc-rest \
-		--template-body file://./cloudformation/stacks/network/vpc-rest.yml \
-		--parameters \
-			ParameterKey=StackFilesPath,ParameterValue=htps://s3.${BUCKET_INFRA_REGION}.amazonaws.com/${BUCKET_INFRA_STACK_PATH}
 
-	@ aws cloudformation wait stack-create-complete --stack-name vpc-rest
+create:
+	@ aws cloudformation create-stack --stack-name task-definition \
+	--template-body file://./cloudformation/stacks/ecs-cluster/task_definition.yml \
+	--parameters \
+		ParameterKey=StackFilesPath,ParameterValue=htps://s3.${BUCKET_INFRA_REGION}.amazonaws.com/${BUCKET_INFRA_STACK_PATH}
 
-delete.rest:
-	@ aws cloudformation delete-stack --stack-name vpc-rest
-	@ aws cloudformation wait stack-delete-complete --stack-name vpc-rest
+	@ aws cloudformation wait stack-create-complete  \
+	--stack-name task-definition
 
-delete.complete:
-	@ aws cloudformation delete-stack --stack-name vpc-rest
-	@ aws cloudformation delete-stack --stack-name vpc-create
+delete:
+	@ aws cloudformation delete-stack --stack-name task-definition
+	@ aws cloudformation wait stack-delete-complete --stack-name task-definition

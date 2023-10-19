@@ -1,0 +1,21 @@
+Parameters:
+  AlbName:
+    Type: String
+    Description: The name of the load balancer. This name must be unique per region per account
+
+  SecurityGroupIDs:
+    Type: CommaDelimitedList
+    Description: The IDs of the security groups for the load balancer.
+
+  SubnetIDs:
+    Type: CommaDelimitedList
+    Description: The IDs of the public subnets. You can specify only one subnet per Availability Zone
+
+Resources:
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Type: application
+      Name: !Ref ALBName
+      SecurityGroups: !Ref SecurityGroupIDs
+      Subnets: !Ref SubnetIDs

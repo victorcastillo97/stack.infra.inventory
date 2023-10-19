@@ -9,7 +9,7 @@ Resources:
     Properties:
       ClusterName: !Ref ClusterName
 
-Outputs:
+Outputs: 
   Name:
-    Description:
-    Value: 
+    Description: The id of the Elastic Ip
+    Value: !Ref ECSCluster

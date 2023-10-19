@@ -1,0 +1,61 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Create a task definition for a web server.
+
+Parameters:
+  TaskFamilyName:
+    Type: String
+    Description: Name of the task definition
+    Default: first-create-task-template
+  
+  RequiresCompatibilities:
+    Type: String
+    Description: Set of launch types required by the task. The valid values are EC2 and FARGATE
+    Default: "FARGATE"
+
+  ImageUri:
+    Type: String
+    Description: The image used to start the container
+    Default: public.ecr.aws/nginx/nginx:stable-perl
+  
+  RuntimePlatform:
+    Type: CommaDelimitedList
+    Description: The operating system that your tasks definitions run on, only for tasks using the Fargate launch type.
+    Default: "LINUX,X86_64"
+
+  TaskCpu:
+    Type: Number
+    Description: The number of cpu units used by the task. If you use the EC2 launch type, this field is optional.
+    Default: 1024
+
+  TaskMemory:
+    Type: Number
+    Description: The amount (in MiB) of memory used by the task. If your tasks runs on Amazon EC2 instances, you must specify either a task-level memory value or a container-level memory value.If your tasks runs on Amazon EC2 instances, you must specify either a task-level memory value or a container-level memory value.
+    Default: 3072
+
+  ContainerDefinitions:
+    Type: String
+
+Resources:
+  ECSTaskDefinition:
+    Type: 'AWS::ECS::TaskDefinition'
+    Properties:
+      Family: !Ref TaskFamilyName
+      Cpu: !Ref TaskCpu
+      Memory: !Ref TaskMemory
+      NetworkMode: awsvpc
+      RuntimePlatform:
+        OperatingSystemFamily: !Select [0, !Ref RuntimePlatform]
+        CpuArchitecture: !Select [1, !Ref RuntimePlatform]
+      RequiresCompatibilities: !Split
+        - ","
+        - !Ref RequiresCompatibilities
+      ContainerDefinitions: !Split
+        - ","
+        - !Ref ContainerDefinitions
+
+#        - Name: !Sub "${TaskFamilyName}-container"
+#          Image: !Ref ImageUri
+#          Essential: true
+#          PortMappings:
+#            - ContainerPort: 80
+#              Protocol: tcp

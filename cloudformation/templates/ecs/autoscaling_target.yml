@@ -1,0 +1,37 @@
+Parameters:
+  MaxCapacity:
+    Type: Number
+    Description: The maximum value that you plan to scale out to.
+
+  MinCapacity:
+    Type: Number
+    Description: The minimum value that you plan to scale in to.
+
+  ResourceId:
+    Type: String
+    Description: The identifier of the resource associated with the scalable target. example service/{NameCluster}/{NameService}
+
+  RoleARN:
+    Type: String
+    Description: (ARN) of IAM role that allows Application Auto Scaling to modify the scalable target on your behalf.
+  
+  ScalableDimension:
+    Type: String
+    Description: The scalable dimension associated with the scalable target
+    Default: ecs:service:DesiredCount
+
+  ServiceNamespace:
+    Type: String
+    Description: The namespace of the AWS service that provides the resource
+    Default: ecs
+  
+Resources:  
+  AutoScalingTarget:
+    Type: AWS::ApplicationAutoScaling::ScalableTarget
+    Properties:
+      MaxCapacity: !Ref MaxCapacity
+      MinCapacity: !Ref MinCapacity
+      ResourceId: !Ref ResourceId
+      RoleARN: !Ref RoleARN
+      ScalableDimension: !Ref ScalableDimension
+      ServiceNamespace: !Ref ServiceNamespace

@@ -1,0 +1,33 @@
+Parameters:
+  LoadBalancerArn:
+    Type: String
+    Description: The Amazon Resource Name (ARN) of the load balancer.
+
+  TargetGroupArn:
+    Type: String
+    Description: The Amazon Resource Name (ARN) of the Target Group.
+
+  ListenerType:
+    Type: String
+    Description: The Amazon Resource Name (ARN) of the Target Group.
+    Default: forward
+
+  Port:
+    Type: Number
+    Description: The port on which the load balancer is listening
+
+  Protocol:
+    Type: String
+    Description: The protocol for connections from clients to the load balancer. For Application Load Balancers, the supported protocols are HTTP and HTTPS
+    Default: HTTP
+
+Resources:
+  Listener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+      - Type: !Ref ListenerType
+        TargetGroupArn: !Ref TargetGroupArn
+      LoadBalancerArn: !Ref LoadBalancerArn
+      Port: !Ref Port
+      Protocol: !Ref Protocol

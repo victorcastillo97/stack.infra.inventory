@@ -1,0 +1,40 @@
+Parameters:
+  Name:
+    Type: String
+    Description: The name of the target group.
+  
+  Port:
+    Type: Number
+    Description: The port number to which requests will be directed in the target group.
+
+  Protocol:
+    Type: String
+    Description: The protocol used to route requests to the target group. In this case, it is set to HTTP.
+
+  TargetType:
+    Type: String
+    Description: The type of target in the target group.
+
+  HealthCheckProtocol:
+    Type: String
+    Description: The protocol used to perform health checks on the targets
+  
+  HealthCheckPath:
+    Type: String
+    Description: The path used for health checks on the target group's targets
+
+  VpcID:
+    Type: String
+    Description: The identifier of the Amazon Virtual Private Cloud (VPC) in which the target group will be deployed.
+
+Resources:
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Ref Name
+      Port: !Ref Port
+      Protocol: !Ref Protocol
+      TargetType: !Ref TargetType
+      HealthCheckProtocol: !Ref HealthCheckProtocol
+      HealthCheckPath: !Ref HealthCheckPath
+      VpcId: !Ref VpcID

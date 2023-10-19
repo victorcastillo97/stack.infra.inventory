@@ -1,0 +1,79 @@
+Parameters:
+  ProjectName:
+    Type: String
+    Description: Name of the Project
+    Default: first-create-task-template
+  
+  RequiresCompatibilities:
+    Type: String
+    Description: Set of launch types required by the task. The valid values are EC2 and FARGATE
+    Default: "FARGATE"
+
+  ImageUri:
+    Type: String
+    Description: The image used to start the container
+    Default: public.ecr.aws/nginx/nginx:stable-perl
+  
+  RuntimePlatform:
+    Type: CommaDelimitedList
+    Description: The operating system that your tasks definitions run on, only for tasks using the Fargate launch type.
+    Default: "LINUX,X86_64"
+
+  TaskCpu:
+    Type: Number
+    Description: The number of cpu units used by the task. If you use the EC2 launch type, this field is optional.
+    Default: 1024
+
+  TaskMemory:
+    Type: Number
+    Description: The amount (in MiB) of memory used by the task. If your tasks runs on Amazon EC2 instances, you must specify either a task-level memory value or a container-level memory value.If your tasks runs on Amazon EC2 instances, you must specify either a task-level memory value or a container-level memory value.
+    Default: 3072
+
+Resources:
+  TaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Join ['', [!Ref ProjectName, TaskExecutionRole]]
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy'
+
+  TaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Join ['', [!Ref ProjectName, TaskRole]]
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: 'sts:AssumeRole'
+
+  ECSTaskDefinition:
+    Type: 'AWS::ECS::TaskDefinition'
+    Properties:
+      Family: !Ref ProjectName
+      Cpu: !Ref TaskCpu
+      Memory: !Ref TaskMemory
+      NetworkMode: awsvpc
+      ExecutionRoleArn: !Ref TaskExecutionRole
+      TaskRoleArn: !Ref TaskRole 
+      RuntimePlatform:
+        OperatingSystemFamily: !Select [0, !Ref RuntimePlatform]
+        CpuArchitecture: !Select [1, !Ref RuntimePlatform]
+      RequiresCompatibilities: !Split
+        - ","
+        - !Ref RequiresCompatibilities
+      ContainerDefinitions: 
+        - Name: !Sub "${ProjectName}-container"
+          Image: !Ref ImageUri
+          Essential: true
+          PortMappings:
+            - ContainerPort: 80
+              hostPort: 80
+              Protocol: tcp

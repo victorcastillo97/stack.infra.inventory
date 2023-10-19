@@ -1,0 +1,48 @@
+Parameters:
+  PolicyName:
+    Type: String
+    Description: Name of the policy
+
+  PolicyType:
+    Type: String
+    Description: Type of the policy
+
+  ResourceId:
+    Type: String
+    Description: The identifier of the resource associated with the scalable target. example service/{NameCluster}/{NameService}
+
+  ScalingTargetId:
+    Type: String
+    Description: The CloudFormation-generated ID of an Application Auto Scaling scalable target.
+    
+  ScaleInCooldown:
+    Type: Number
+    Description: The amount of time, in seconds, after a scale-in activity completes before another scale-in activity can start
+
+  ScaleOutCooldown:
+    Type: Number
+    Description: The amount of time, in seconds, to wait for a previous scale-out activity to take effect.
+
+  TargetValue:
+    Type: Number
+    Description: The value must be a valid number based on the choice of metric
+
+  MetricType:
+    Type: String
+    Description: Type of the metric
+
+Resources:
+  AutoScalingPolicy:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: !Ref PolicyName
+      PolicyType: !Ref PolicyType
+      ResourceId: !Ref ResourceId
+      ScalingTargetId: !Ref ScalingTargetId
+      TargetTrackingScalingPolicyConfiguration:
+        DisableScaleIn: false
+        ScaleInCooldown: !Ref ScaleInCooldown
+        ScaleOutCooldown: !Ref ScaleOutCooldown
+        TargetValue: !Ref TargetValue
+        PredefinedMetricSpecification:
+          PredefinedMetricType: !Ref MetricType
