@@ -15,6 +15,11 @@ Parameters:
     Type: String
     Description: The CloudFormation-generated ID of an Application Auto Scaling scalable target.
     
+  DisableScaleIn:
+    Type: String
+    Description: Indicates whether scale in by the target tracking scaling policy is disabled.
+    Default: false
+
   ScaleInCooldown:
     Type: Number
     Description: The amount of time, in seconds, after a scale-in activity completes before another scale-in activity can start
@@ -40,7 +45,7 @@ Resources:
       ResourceId: !Ref ResourceId
       ScalingTargetId: !Ref ScalingTargetId
       TargetTrackingScalingPolicyConfiguration:
-        DisableScaleIn: false
+        DisableScaleIn: !Ref DisableScaleIn
         ScaleInCooldown: !Ref ScaleInCooldown
         ScaleOutCooldown: !Ref ScaleOutCooldown
         TargetValue: !Ref TargetValue

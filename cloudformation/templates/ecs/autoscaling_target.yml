@@ -35,3 +35,8 @@ Resources:
       RoleARN: !Ref RoleARN
       ScalableDimension: !Ref ScalableDimension
       ServiceNamespace: !Ref ServiceNamespace
+
+Outputs:
+  Id:
+    Description: Id of the AutoScalingTarget
+    Value: !Ref AutoScalingTarget

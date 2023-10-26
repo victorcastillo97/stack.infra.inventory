@@ -1,29 +1,8 @@
-# Proyecto de Implementación de Aplicación Frontend en AWS
+# Despliegue de Infraestructura en AWS para app Contenerizada en ECS Fargate
 
-Este proyecto tiene como objetivo implementar una aplicación frontend en AWS utilizando servicios como S3, CloudFront, certificado SSL y Route 53 para proporcionar una entrega de contenido segura y escalable.
+Este proyecto tiene como objetivo crear una infraestructura robusta en AWS para desplegar aplicaciones contenerizadas en ECS Fargate, priorizando la alta disponibilidad. Esto incluye la configuración de un VPC, subredes, instancias NAT, un Application Load Balancer (ALB), un Target Group y políticas de escalabilidad automática para garantizar un rendimiento óptimo y una experiencia ininterrumpida del usuario.
 
 ## Estructura de carpetas
-
-root/
-|
-├── cloudformation/ 
-|   ├── stacks/ (stacks de cloudformation)
-|   |   |        - ecs-app
-|   |   |            - dev
-|   |   |                - ecs.service.yml
-|   |   |                - parameters.yml
-|   |   |            - qa
-|   |   |            - prod
-|   |   |        - ecs-cluster
-|   |   |            - cluster.yml
-|   |   |            - parameters.json
-|   |   |        - network
-|   |   |    - templates (Templates de cloudformation)
-|   |   |        - common
-|   |   |        - ecs
-|   |   |        - network
-|   |   |            - vpc.yml
-|   |   |        - security
 
 root/
 |   
@@ -34,7 +13,7 @@ root/
 |   |   |   ├── qa/
 |   |   |   ├── prod/
 |   |   ├── ecs-cluster/
-|   |   |   ├── cluster.yml
+|   |   |   ├── service.yml
 |   |   |   ├── parameters.yml
 |   |   ├── network/
 |   |   |   ├── vpc.yml
@@ -48,33 +27,25 @@ root/
 ├── Makefile
 ├── readme.md
 
-| 
-Makefile
-readme.md
 
 ## Variables del Proyecto
 
 Aquí están las variables utilizadas en el Makefile:
 
-- OWNER: El propietario del proyecto.
-- TYPE_APP: El tipo de aplicación.
-- SERVICE_NAME: El nombre del servicio.
-- ENV: El entorno de implementación (por defecto es "dev").
-- PROJECT_NAME: El nombre del proyecto construido a partir de las variables anteriores.
-- BUCKET_INFRA_REGION: La región de AWS donde se creará el bucket S3 de infraestructura.
-- BUCKET_INFRA: El nombre del bucket S3 de infraestructura.
-- BUCKET_INFRA_STACK_PATH: La ruta dentro del bucket S3 donde se almacenarán los archivos de CloudFormation.
-- DOMAIN_NAME: El nombre de dominio asociado al proyecto.
+- **OWNER**: El propietario del proyecto.
+- **TYPE_APP**: El tipo de aplicación.
+- **SERVICE_NAME**: El nombre del servicio.
+- **ENV**: El entorno de implementación (por defecto es "dev").
+- **PROJECT_NAME**: El nombre del proyecto construido a partir de las variables anteriores.
+- **BUCKET_INFRA_REGION**: La región de AWS donde se creará el bucket S3 de infraestructura.
+- **BUCKET_INFRA**: El nombre del bucket S3 de infraestructura.
+- **BUCKET_INFRA_STACK_PATH**: La ruta dentro del bucket S3 donde se almacenarán los archivos de CloudFormation.
 
 ## Requisitos Previos
 
 Antes de comenzar, asegúrate de tener configurados los siguientes elementos:
 
 1. **Credenciales de AWS**: Asegúrate de que tienes las credenciales de AWS configuradas correctamente en tu entorno local.
-
-2. **Archivos Estáticos**: Tienes archivos estáticos de tu aplicación frontend (por ejemplo, HTML, CSS, JavaScript) que deseas alojar en AWS S3.
-
-3. **Dominio y HostedZone**: Has obtenido el nombre de dominio y creado un hosted zone en Route 53 para asociarlo al proyecto.
 
 ## Configuración del Proyecto
 
@@ -96,12 +67,24 @@ Otras variables...
 Este proyecto utiliza un Makefile para automatizar la creación y gestión de los recursos AWS necesarios. Consulta la sección anterior para conocer los comandos disponibles y cómo utilizarlos.
 
 ## Implementación
-Revisa los comandos que puedes usar para implementar tu aplicación frontend en AWS.
+Revisa los comandos que puedes usar para implementar tu aplicación en AWS ECS Fargate.
 
 --------
 ```console
 Target                     Help                                                        Usage
 ------                     ----                                                        -----
-create.network       Create buckets3 for template stacks                         make create.network
-delete.network       Copy local files stacks to S3                               make delete.network
+network.create          Create stack for all network(vpc, subnets,etc.)             make network.create
+network.delete          Delete stack network                                        make network.delete
+task.create             Create stack for task definition                            make task.create
+task.delete             Delete stack task definition                                make task.delete
+task.update             Update stack definition                                     make task.update
+alb.create              Create stack for alb, targetgroup, listener                 make alb.create
+alb.delete              Delete stack about alb                                      make alb.delete
+service.create          Create stack ECS Fargate(cluster, service,etc)              make service.create
+service.delete          Delete stack ECS Fargate                                    make service.delete
+
 ```
+
+## Referencias
+- https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-reference.html
+- https://github.com/1Strategy/fargate-cloudformation-example/blob/master/fargate.yaml

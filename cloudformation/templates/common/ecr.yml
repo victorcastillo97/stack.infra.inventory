@@ -1,0 +1,15 @@
+Parameters:
+  Name:
+    Description: Name of the repository ECR  
+    Type: String
+
+  ImageTagMutability:
+    Description: If IMMUTABLE is specified, all image tags within the repository will be immutable
+    Type: MUTABLE
+
+Resources:
+  Repository: 
+    Type: AWS::ECR::Repository
+    Properties: 
+      RepositoryName: !Ref Name
+      ImageTagMutability: !Ref ImageTagMutability

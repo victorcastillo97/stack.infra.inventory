@@ -1,0 +1,123 @@
+Parameters:
+  ProjectName:
+    Type: String
+    Description: Name of the project
+  
+  StackFilesPath:
+    Type: String
+    Description: Path of the stacks template files
+
+  PathExportVpcID:
+    Type: String
+    Description: Path from stack where the vpc id is there
+    
+  PathExportSubnetIDs:
+    Type: String
+    Description: Path from stack where List Id's of the subnets is there 
+    Default: subnet-016a81bfda0b16e48,subnet-0f8688327a5826e69
+  
+  PathExportALBSecurityGroupID:
+    Type: String
+    Description: Path from stack where ID of the security group from ALB is there 
+    Default: sg-0732e35e1a2ebfb4b
+
+  PathExportLBTargetGroupArn:
+    Type: String
+    Description: Path from stack where ARN of the Target group for ALB is there  
+
+  PathExportTaskDefinitionARN:
+    Type: String
+    Description: Path from stack where ARN of the Task Definition for use in service is there 
+
+Resources:
+  Cluster:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${StackFilesPath}/ecs/cluster.yml"
+      Parameters:
+        ClusterName: !Join ['-', [!Ref ProjectName, cluster]]
+
+  ServiceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Join ['-', [!Ref ProjectName, Container, Sg]]
+      SecurityGroupIngress:
+        - SourceSecurityGroupId:
+            Fn::ImportValue: 
+              'Fn::Sub': '${PathExportALBSecurityGroupID}'
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+      VpcId: 
+        Fn::ImportValue: 
+          'Fn::Sub': '${PathExportVpcID}'
+
+  Service:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${StackFilesPath}/ecs/service_fargate.yml"
+      Parameters:
+        ServiceName: !Sub "${ProjectName}-service"
+        ClusterName: !GetAtt Cluster.Outputs.Name
+        TaskDefinitionARN:
+          Fn::ImportValue: 
+            'Fn::Sub': '${PathExportTaskDefinitionARN}'
+        DesiredCount: 1
+        LBContainerName: !Join ['-', [!Ref ProjectName, container, 1]]
+        LBContainerPort: 80
+        LBTargetGroupArn:
+          Fn::ImportValue: 
+            'Fn::Sub': '${PathExportLBTargetGroupArn}'
+        SubnetIDs:
+          Fn::ImportValue: 
+            'Fn::Sub': '${PathExportSubnetIDs}'
+        SecurityGroupIDs: !Ref ServiceSecurityGroup
+
+  AutoScalingRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Join ['-', [!Ref ProjectName, AutoScalingRole]]
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: !Join ['-', [!Ref ProjectName, AutoScaling, service]]
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "ecs:DescribeServices"
+                  - "ecs:UpdateService"
+                  - "cloudwatch:PutMetricAlarm"
+                  - "cloudwatch:DescribeAlarms"
+                  - "cloudwatch:DeleteAlarms"
+                Resource:
+                  - "*"
+
+  AutoScalingTarget:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${StackFilesPath}/ecs/autoscaling_target.yml"
+      Parameters:
+        MinCapacity: 1
+        MaxCapacity: 3
+        ResourceId: !Join ['/', [service, !GetAtt Cluster.Outputs.Name, !GetAtt Service.Outputs.Name]]
+        RoleARN: !GetAtt AutoScalingRole.Arn
+
+  AutoScalingPolicy:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${StackFilesPath}/ecs/autoscaling_policy.yml"
+      Parameters:
+        PolicyName: !Sub "${ProjectName}-autoscaling-policy"
+        PolicyType: TargetTrackingScaling
+        ResourceId: !Join ['/', [service, !GetAtt Cluster.Outputs.Name, !GetAtt Service.Outputs.Name]]
+        ScalingTargetId: !GetAtt AutoScalingTarget.Outputs.Id
+        ScaleInCooldown: 300
+        ScaleOutCooldown: 300
+        TargetValue: 80
+        MetricType: ECSServiceAverageCPUUtilization

@@ -1,0 +1,4 @@
+{
+    "ImageUri": "public.ecr.aws/nginx/nginx:stable-perl",
+    "RequiresCompatibilities": "FARGATE"
+}

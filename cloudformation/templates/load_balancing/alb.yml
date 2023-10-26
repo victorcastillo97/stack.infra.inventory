@@ -1,7 +1,12 @@
 Parameters:
-  AlbName:
+  Name:
     Type: String
     Description: The name of the load balancer. This name must be unique per region per account
+  
+  Scheme:
+    Type: String
+    Description: The nodes of an Internet-facing load balancer have public IP addresses.The nodes of an internal load balancer have only private IP addresses.
+    Default: internet-facing
 
   SecurityGroupIDs:
     Type: CommaDelimitedList
@@ -16,6 +21,12 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
       Type: application
-      Name: !Ref ALBName
+      Name: !Ref Name
+      Scheme: !Ref Scheme
       SecurityGroups: !Ref SecurityGroupIDs
       Subnets: !Ref SubnetIDs
+
+Outputs:
+  Arn:
+    Description: The ARN of the ALB
+    Value: !Ref LoadBalancer

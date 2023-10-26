@@ -1,0 +1,7 @@
+{
+    "SubnetIDs": "subnet-016a81bfda0b16e48,subnet-0f8688327a5826e69",
+    "ALBSecurityGroupID": "sg-0732e35e1a2ebfb4b",
+    "LBTargetGroupArn": "",
+    "TaskDefinitionARN": "",
+    "VpcID":""
+}

@@ -5,7 +5,7 @@ Parameters:
 
   ProjectName:
     Type: String
-    Description: Name of the VPC
+    Description: Name of the project
 
   VpcCidrBlock:
     Type: String
@@ -201,3 +201,27 @@ Resources:
         NatGatewayId: !GetAtt NatGateway.Outputs.Id
 
 
+Outputs:
+  IdSubnetsPublic:
+    Description: Subnets Public ids
+    Value: !Join
+        - ','
+        - - !GetAtt SubnetPublic1.Outputs.Id
+          - !GetAtt SubnetPublic2.Outputs.Id
+    Export:
+        Name: !Sub "${AWS::StackName}-subnets-publics"
+      
+  IdSubnetsPrivate:
+    Description: Id of the subnets privates
+    Value: !Join
+        - ','
+        - - !GetAtt SubnetPrivate1.Outputs.Id
+          - !GetAtt SubnetPrivate2.Outputs.Id
+    Export:
+        Name: !Sub "${AWS::StackName}-subnets-privates"
+
+  IdVpc:
+    Description: Id of the VPC
+    Value: !GetAtt VPC.Outputs.Id
+    Export:
+        Name: !Sub "${AWS::StackName}-vpc"

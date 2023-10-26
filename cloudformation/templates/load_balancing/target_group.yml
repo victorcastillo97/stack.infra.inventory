@@ -38,3 +38,8 @@ Resources:
       HealthCheckProtocol: !Ref HealthCheckProtocol
       HealthCheckPath: !Ref HealthCheckPath
       VpcId: !Ref VpcID
+
+Outputs:
+  Arn:
+    Description: The ARN of the Target Group
+    Value: !Ref TargetGroup

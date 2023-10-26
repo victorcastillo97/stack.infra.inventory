@@ -1,0 +1,17 @@
+Parameters:
+  ProjectName:
+    Description: Name of the Project  
+    Type: String
+
+Resources:
+  Repository:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${StackFilesPath}/common/ecr.yml"
+      Parameters:
+        Name: !Ref ProjectName
+
+Outputs:
+  Uri:
+    Description: Returns the URI for the specified AWS::ECR::Repository resource.
+    Value: !GetAtt Repository.RepositoryUri

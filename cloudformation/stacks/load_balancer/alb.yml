@@ -1,0 +1,89 @@
+Parameters:
+  ProjectName:
+    Type: String
+    Description: Name of the project
+  
+  StackFilesPath:
+    Type: String
+    Description: Path of the stacks template files
+
+  PathExportVpcID:
+    Type: String
+    Description: Path from stack where the vpc id is there
+
+  PathExportSubnetIDs:
+    Type: String
+    Description:  Path from stack List Id's of the subnets id is there
+
+Resources:
+  ALBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Join ['-', [!Ref ProjectName, Alb, Sg]]
+      SecurityGroupIngress:
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+      VpcId: 
+        Fn::ImportValue: 
+          'Fn::Sub': '${PathExportVpcID}'
+  ALB:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${StackFilesPath}/load_balancing/alb.yml"
+      Parameters:
+        Name: !Sub "${ProjectName}-alb"
+        Scheme: internet-facing
+        SecurityGroupIDs: !Ref ALBSecurityGroup
+        SubnetIDs: 
+          Fn::ImportValue: 
+            'Fn::Sub': '${PathExportSubnetIDs}'
+
+  TargetGroup:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${StackFilesPath}/load_balancing/target_group.yml"
+      Parameters:
+        Name: !Sub "${ProjectName}"
+        Port: 80
+        Protocol: HTTP
+        TargetType: ip
+        HealthCheckProtocol: HTTP
+        HealthCheckPath: /
+        VpcID:
+          Fn::ImportValue: 
+            'Fn::Sub': '${PathExportVpcID}'
+
+  Listener:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${StackFilesPath}/load_balancing/listener.yml"
+      Parameters:
+        LoadBalancerArn: !GetAtt ALB.Outputs.Arn
+        TargetGroupArn: !GetAtt TargetGroup.Outputs.Arn
+        ListenerType: forward
+        Port: 80
+        Protocol: HTTP
+
+Outputs:
+  TargetGroupArn:
+    Description: ARN of the target group
+    Value: !GetAtt TargetGroup.Outputs.Arn
+    Export:
+      Name:
+        !Sub '${AWS::StackName}-TargetGroup-ARN'
+
+  ALBArn:
+    Description: ARN of the ALB
+    Value: !GetAtt ALB.Outputs.Arn
+    Export:
+      Name:
+        !Sub '${AWS::StackName}-ALB-ARN'
+  
+  ALBSecurityGroupId:
+    Description: Security group of the ALB
+    Value: !Ref ALBSecurityGroup
+    Export:
+      Name:
+        !Sub '${AWS::StackName}-ALBSecurityGroup-ID'

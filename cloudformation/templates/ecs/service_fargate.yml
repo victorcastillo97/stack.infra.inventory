@@ -72,6 +72,6 @@ Resources:
       EnableECSManagedTags: true
 
 Outputs:
-  Id:
-    Description:
-    Value: 
+  Name:
+    Description: Name of the service
+    Value: !GetAtt ECSServiceFargate.Name
